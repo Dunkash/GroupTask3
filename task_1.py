@@ -195,6 +195,8 @@ def traverse_border(x, y, img_arr, line_color):
     x1, y1, d = get_next_point(x, y, img_arr, line_color, path)
     if d == -1:
         return []
+    path.add((x, y, -1))
+    path.add((x1, y1, d))
     l.append((x, y, -1))
     l.append((x1, y1, d))
     while not (x1 == x and y1 == y):
