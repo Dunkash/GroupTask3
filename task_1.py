@@ -189,32 +189,23 @@ def colors_equals(c1, c2):
     return np.array_equal(c1, c2)
 
 
-def traverse_border(x, y, img_arr, line_color):
+def outline(x, y, img_arr, line_color):
     l = dllist()
-    path = set()
-    x1, y1, d = get_next_point(x, y, img_arr, line_color, path)
+    x1, y1, d = get_next_point(x, y, img_arr, line_color, 0)
     if d == -1:
-        return []
-    path.add((x, y, -1))
-    path.add((x1, y1, d))
+        return [], False
     l.append((x, y, -1))
     l.append((x1, y1, d))
     while not (x1 == x and y1 == y):
-        x1, y1, d = get_next_point(x1, y1, img_arr, line_color, path)
+        x1, y1, d = get_next_point(x1, y1, img_arr, line_color, (d - 2) % 8)
         if d >= 0:
             l.append((x1, y1, d))
         else:
-            break
-            d1 = -1
-            while d1 < 0:
-                if l.size == 0:
-                    return []
-                x2, y2, d1 = l.remove(l.last)
-                x2, y2, d1 = get_next_point(x2, y2, img_arr, line_color, d1 + 1)
-    return l
+            return l, False
+    return l, True
 
 
-def get_next_point(x, y, img_arr, line_color, path):
+def get_next_point(x, y, img_arr, line_color, direction):
     next_coords = [
         (x, y + 1),
         (x + 1, y + 1),
@@ -225,20 +216,10 @@ def get_next_point(x, y, img_arr, line_color, path):
         (x - 1, y),
         (x - 1, y + 1)
     ]
-
-    neightbours = [img_arr[x][y + 1],
-                   img_arr[x + 1][y + 1],
-                   img_arr[x + 1][y],
-                   img_arr[x + 1][y - 1],
-                   img_arr[x][y - 1],
-                   img_arr[x - 1][y - 1],
-                   img_arr[x - 1][y],
-                   img_arr[x - 1][y + 1]]
-
-    for i in range(len(neightbours)):
-        if colors_equals(neightbours[i], line_color) and not next_coords[i] in path:
+    neighbours = [img_arr[c[0]][c[1]] for c in next_coords]
+    indexes = [(direction + i) % 8 for i in range(6)]
+    for i in indexes:
+        if colors_equals(neighbours[i], line_color):
             x1, y1 = next_coords[i]
-            path.add((x1, y1))
             return x1, y1, i
-
     return 0, 0, -1

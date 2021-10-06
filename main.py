@@ -14,6 +14,7 @@ class Paint(object):
     DUMMY_HEIGHT = 400
     LINE_COLOR = "#000000"
     CHECKING_LINE_COLOR = "#ff0000"
+    ERROR_LINE_COLOR = "#aa00aa"
 
     def __init__(self):
         self.root = Tk()
@@ -29,7 +30,7 @@ class Paint(object):
         self.color_button.grid(row=0, column=0)
         self.fill_with_picture = False
 
-        self.edit_mode_button = Button(self.root, text='edit mode', command=self.choose_image)
+        self.edit_mode_button = Button(self.root, text='change picture', command=self.choose_image)
         self.edit_mode_button.grid(row=0, column=1)
 
         self.create_mode_button = Button(self.root, text='create mode', command=self.set_create_mode)
@@ -45,7 +46,7 @@ class Paint(object):
                                                command=self.__set_fill_with_picture_mode)
         self.fill_with_picture_button.grid(row=0, column=5)
 
-        self.circle_button = Button(self.root, text='circle', command=self.circle)
+        self.circle_button = Button(self.root, text='outline', command=self.circle)
         self.circle_button.grid(row=0, column=6)
 
         self.active_button = self.color_button
@@ -107,9 +108,10 @@ class Paint(object):
 
     def circle(self):
         if self.last_x != None and self.last_y != None:
-            l = task_1.traverse_border(self.last_y, self.last_x, self.img_arr, self.line_rgb)
+            l, res = task_1.outline(self.last_y, self.last_x, self.img_arr, self.line_rgb)
+            color = self.CHECKING_LINE_COLOR if res else self.ERROR_LINE_COLOR
             for x, y, _ in l:
-                self.img_arr[x][y] = np.array(helpers.hex_to_rgb( self.CHECKING_LINE_COLOR))
+                self.img_arr[x][y] = np.array(helpers.hex_to_rgb(color))
             self.__sync_image()
             self.__set_painting_mode()
             self.__setup()
@@ -164,10 +166,11 @@ class Paint(object):
     def choose_image(self):
         image_path = askopenfilename()
         if image_path != '':
-            self.canvas.delete('all')
-            self.create_mode = False
-            self.editing_image_path = image_path
-            self.__set_editing_image_view()
+            self.picture = image_path
+        #     self.canvas.delete('all')
+        #     self.create_mode = False
+        #     self.editing_image_path = image_path
+        #     self.__set_editing_image_view()
 
     def activate_button(self, some_button, eraser_mode=False):
         self.active_button.config(relief=RAISED)
